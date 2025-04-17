@@ -1,6 +1,7 @@
 
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
+import { TypeWriter } from "@/components/ui/type-writer";
 import { ArrowRight } from "lucide-react";
 
 export default function Index() {
@@ -14,10 +15,11 @@ export default function Index() {
             <div className="flex flex-col items-center space-y-4 text-center">
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                  Gerencie seu progresso de desenvolvimento com{" "}
-                  <span className="bg-gradient-to-r from-indigo-500 to-indigo-600 bg-clip-text text-transparent">
-                    inteligência
-                  </span>
+                  Gerencie seu progresso de desenvolvimento de forma{" "}
+                  <TypeWriter
+                    words={["inteligente", "eficiente", "produtiva", "organizada"]}
+                    className="bg-gradient-to-r from-indigo-500 to-indigo-600 bg-clip-text text-transparent"
+                  />
                 </h1>
                 <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
                   Acompanhe seu progresso, organize suas tarefas e melhore sua produtividade 
