@@ -2,7 +2,7 @@
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { TypeWriter } from "@/components/ui/type-writer";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Bell, ChartLine, ChartNoAxesCombined, CheckCircle } from "lucide-react";
 
 export default function Index() {
   return (
@@ -40,7 +40,8 @@ export default function Index() {
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="space-y-2">
+                <div className="space-y-2 flex flex-col items-center">
+                  <CheckCircle className="h-12 w-12 text-indigo-500" />
                   <h3 className="text-xl font-bold">Organize suas tarefas</h3>
                   <p className="text-muted-foreground">
                     Crie checklists personalizadas para seus projetos
@@ -48,7 +49,8 @@ export default function Index() {
                 </div>
               </div>
               <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="space-y-2">
+                <div className="space-y-2 flex flex-col items-center">
+                  <ChartLine className="h-12 w-12 text-indigo-500" />
                   <h3 className="text-xl font-bold">Acompanhe seu progresso</h3>
                   <p className="text-muted-foreground">
                     Visualize seu avanço com estatísticas inteligentes
@@ -56,7 +58,8 @@ export default function Index() {
                 </div>
               </div>
               <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="space-y-2">
+                <div className="space-y-2 flex flex-col items-center">
+                  <ChartNoAxesCombined className="h-12 w-12 text-indigo-500" />
                   <h3 className="text-xl font-bold">Melhore sua produtividade</h3>
                   <p className="text-muted-foreground">
                     Foque no que importa com lembretes e priorização
