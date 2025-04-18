@@ -1,10 +1,21 @@
-
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/components/AuthProvider";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
+import { ArrowRight, Bell, ChartLine, CheckCircle, ChartNoAxesCombined } from "lucide-react";
 import { TypeWriter } from "@/components/ui/type-writer";
-import { ArrowRight, Bell, ChartLine, ChartNoAxesCombined, CheckCircle } from "lucide-react";
 
 export default function Index() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
