@@ -9,6 +9,16 @@ import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ChecklistWithItems, ChecklistPriority } from "@/types/checklist";
 import { format } from "date-fns";
+import { Trash, Share, Link as LinkIcon } from "lucide-react";
+import { useDelete } from "@/hooks/useDelete";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription, 
+  DialogTrigger 
+} from "@/components/ui/dialog";
 
 interface ChecklistCardProps {
   checklist: ChecklistWithItems;
@@ -19,6 +29,8 @@ export function ChecklistCard({ checklist }: ChecklistCardProps) {
   const [selectedPriority, setSelectedPriority] = useState<ChecklistPriority>("medium");
   const [dueDate, setDueDate] = useState("");
   const queryClient = useQueryClient();
+  const { deleteChecklist, deleteChecklistItem, toggleChecklistPublicAccess } = useDelete();
+  const [isPublic, setIsPublic] = useState(checklist.is_public || false);
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,10 +70,74 @@ export function ChecklistCard({ checklist }: ChecklistCardProps) {
     }
   };
 
+  const handleDeleteItem = (itemId: string) => {
+    deleteChecklistItem(itemId, checklist.id, checklist.project_id);
+  };
+
+  const handleTogglePublicAccess = async () => {
+    const newPublicStatus = await toggleChecklistPublicAccess(checklist.id, checklist.project_id);
+    setIsPublic(newPublicStatus);
+  };
+
+  const generateShareLink = () => {
+    if (!isPublic) {
+      toast.error("Primeiro torne a checklist pública");
+      return;
+    }
+    const shareUrl = `${window.location.origin}/public/checklists/${checklist.id}`;
+    navigator.clipboard.writeText(shareUrl);
+    toast.success("Link de compartilhamento copiado!");
+  };
+
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row justify-between items-center">
         <CardTitle>{checklist.title}</CardTitle>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant={isPublic ? "default" : "outline"}
+            size="icon" 
+            onClick={handleTogglePublicAccess}
+            title={isPublic ? "Checklist Pública" : "Tornar Pública"}
+          >
+            <Share className="h-4 w-4" />
+          </Button>
+          {isPublic && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={generateShareLink}
+              title="Copiar Link de Compartilhamento"
+            >
+              <LinkIcon className="h-4 w-4" />
+            </Button>
+          )}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="destructive" size="icon">
+                <Trash className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Deletar Checklist</DialogTitle>
+                <DialogDescription>
+                  Tem certeza que deseja deletar esta checklist? 
+                  Todos os itens serão removidos permanentemente.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end gap-4">
+                <Button variant="outline">Cancelar</Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={() => deleteChecklist(checklist.id, checklist.project_id)}
+                >
+                  Deletar Checklist
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -78,6 +154,13 @@ export function ChecklistCard({ checklist }: ChecklistCardProps) {
                 {item.priority}
                 {item.due_date && ` - ${format(new Date(item.due_date), 'dd/MM/yyyy')}`}
               </span>
+              <Button 
+                variant="destructive" 
+                size="icon" 
+                onClick={() => handleDeleteItem(item.id)}
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
             </div>
           ))}
         </div>
