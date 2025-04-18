@@ -25,12 +25,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route 
-                path="/auth" 
-                element={
-                  <Auth />
-                } 
-              />
+              <Route path="/auth" element={<Auth />} />
               <Route
                 path="/dashboard"
                 element={
@@ -44,6 +39,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <NewProject />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/projects/:projectId"
+                element={
+                  <ProtectedRoute>
+                    <ProjectDetails />
                   </ProtectedRoute>
                 }
               />
