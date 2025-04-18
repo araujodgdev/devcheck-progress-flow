@@ -32,7 +32,7 @@ export function Header() {
 					<button
 						type="button"
 						onClick={() => navigate("/")}
-						className="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-indigo-600 bg-clip-text text-transparent border-none bg-transparent p-0"
+						className="text-4xl font-extrabold bg-gradient-to-r from-indigo-500 to-indigo-600 bg-clip-text text-transparent border-none bg-transparent p-0"
 					>
 						DevCheck
 					</button>
