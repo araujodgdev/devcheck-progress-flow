@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Header } from "@/components/layout/Header";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/components/AuthProvider";
 import { useEffect } from "react";
 
 export default function Auth() {

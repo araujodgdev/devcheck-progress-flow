@@ -12,6 +12,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import NewProject from "./pages/NewProject";
+import ProjectDetails from "./pages/ProjectDetails";
 
 const queryClient = new QueryClient();
 
@@ -25,12 +26,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route 
-                path="/auth" 
-                element={
-                  <Auth />
-                } 
-              />
+              <Route path="/auth" element={<Auth />} />
               <Route
                 path="/dashboard"
                 element={
@@ -44,6 +40,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <NewProject />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/projects/:projectId"
+                element={
+                  <ProtectedRoute>
+                    <ProjectDetails />
                   </ProtectedRoute>
                 }
               />

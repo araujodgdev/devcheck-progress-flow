@@ -1,4 +1,3 @@
-
 import { PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useProjects } from "@/hooks/useProjects";
@@ -42,7 +41,9 @@ export default function Dashboard() {
                 </CardContent>
                 <CardFooter>
                   <Button variant="outline" asChild className="w-full">
-                    <Link to={`/projects/${project.id}`}>Ver Projeto</Link>
+                    <Link to={`/projects/${project.id}`}>
+                      Gerenciar Projeto
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>
