@@ -9,7 +9,7 @@ export default function Index() {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="container pt-24 pb-12">
+      <main className="container pt-16 pb-12">
         <section className="py-12 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center space-y-4 text-center">
@@ -21,7 +21,7 @@ export default function Index() {
                     className="bg-gradient-to-r from-indigo-500 to-indigo-600 bg-clip-text text-transparent"
                   />
                 </h1>
-                <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+                <p className="mx-auto max-w-[7  00px] text-muted-foreground md:text-xl">
                   Acompanhe seu progresso, organize suas tarefas e melhore sua produtividade 
                   com um sistema de checklist inteligente feito para desenvolvedores.
                 </p>
