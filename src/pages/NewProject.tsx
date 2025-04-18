@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -32,7 +32,8 @@ export default function NewProject() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const { error } = await supabase.from("projects").insert({
-        ...values,
+        name: values.name,
+        description: values.description,
         user_id: user?.id,
       });
 

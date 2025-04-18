@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
-import { Project } from "@/types/project";
+import { supabase } from "@/integrations/supabase/client";
+import type { Project } from "@/types/project";
 
 export function useProjects() {
   return useQuery({
