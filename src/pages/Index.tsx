@@ -1,26 +1,27 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+
 import { useAuth } from "@/components/AuthProvider";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Bell, ChartLine, CheckCircle, ChartNoAxesCombined } from "lucide-react";
 import { TypeWriter } from "@/components/ui/type-writer";
+import { ArrowRight, Bell, ChartLine, ChartNoAxesCombined, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Index() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user) {
-      navigate("/dashboard");
-    }
-  }, [user, navigate]);
+  const handleStart = () => {
+    if (user) navigate("/dashboard")
+
+    navigate("/auth") 
+  }
+
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="container pt-16 pb-12">
+      <main className="container max-w-5xl pt-16 pb-12">
         <section className="py-12 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center space-y-4 text-center">
@@ -32,13 +33,13 @@ export default function Index() {
                     className="bg-gradient-to-r from-indigo-500 to-indigo-600 bg-clip-text text-transparent"
                   />
                 </h1>
-                <p className="mx-auto max-w-[7  00px] text-muted-foreground md:text-xl">
+                <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
                   Acompanhe seu progresso, organize suas tarefas e melhore sua produtividade 
                   com um sistema de checklist inteligente feito para desenvolvedores.
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center">
-                <Button className="gap-2">
+                <Button className="gap-2" onClick={handleStart}>
                   Começar agora
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -47,7 +48,7 @@ export default function Index() {
           </div>
         </section>
 
-        <section className="py-12 md:py-24 lg:py-32">
+        <section className="py-12 md:py-24 lg:py-8">
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="flex flex-col items-center space-y-4 text-center">
