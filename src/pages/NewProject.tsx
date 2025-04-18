@@ -259,7 +259,7 @@ export default function NewProject() {
                             <RadioGroupItem value="short" />
                           </FormControl>
                           <FormLabel className="font-normal">
-                            Curto (< 1 mês)
+                            Curto (&lt; 1 mês)
                           </FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
