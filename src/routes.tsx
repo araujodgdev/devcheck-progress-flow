@@ -30,9 +30,9 @@ const router = createBrowserRouter([
     element: <DashboardLayout><Outlet /></DashboardLayout>,
     children: [
       { path: '/dashboard', element: <Dashboard /> },
-      { path: '/projects/new', element: <NewProject /> },
-      { path: '/projects/:projectId', element: <ProjectDetails /> },
-      { path: '/projects/:projectId/checklists/:checklistId', element: <ChecklistDetails /> },
+      { path: '/dashboard/projects/new', element: <NewProject /> },
+      { path: '/dashboard/projects/:projectId', element: <ProjectDetails /> },
+      { path: '/dashboard/projects/:projectId/checklists/:checklistId', element: <ChecklistDetails /> },
     ],
   },
   { path: '/shared/checklist/:publicId', element: <SharedChecklist /> },

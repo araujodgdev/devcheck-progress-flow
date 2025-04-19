@@ -22,7 +22,7 @@ export default function HomePage() {
 	];
 
 	return (
-		<SiteLayout>
+		<>
 			{/* Hero Section */}
 			<section className="relative">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
@@ -92,9 +92,9 @@ export default function HomePage() {
 								description:
 									"Generate project checklists automatically using AI recommendations.",
 							},
-						].map((feature, index) => (
+						].map((feature) => (
 							<div
-								key={index}
+								key={`feature-${feature.title.toLowerCase().replace(/\s+/g, '-')}`}
 								className="bg-card p-6 rounded-lg shadow-sm border transition-all hover:shadow-md"
 							>
 								<div className="p-2 bg-primary/10 rounded-full w-fit mb-4">
@@ -148,8 +148,8 @@ export default function HomePage() {
 										description:
 											"Enterprise-grade security for your sensitive project data",
 									},
-								].map((feature, index) => (
-									<div key={index} className="flex items-start gap-3">
+								].map((feature) => (
+									<div key={`workflow-${feature.title.toLowerCase().replace(/\s+/g, '-')}`} className="flex items-start gap-3">
 										<div className="p-1 bg-primary/10 rounded-full mt-1">
 											<feature.icon className="h-4 w-4 text-primary" />
 										</div>
@@ -196,6 +196,6 @@ export default function HomePage() {
 					</Link>
 				</div>
 			</section>
-		</SiteLayout>
+		</>
 	);
 }
