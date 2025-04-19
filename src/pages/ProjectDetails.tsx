@@ -1,6 +1,6 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -70,7 +70,7 @@ export default function ProjectDetails() {
 	return (
 		<div className="container mx-auto p-4">
 			<div className="flex justify-between items-center mb-6">
-				<h1 className="text-2xl font-bold">{project?.name}</h1>
+				<h1 className="text-2xl font-bold">{project?.title}</h1>
 				<AlertDialog>
 					<AlertDialogTrigger asChild>
 						<Button variant="destructive">

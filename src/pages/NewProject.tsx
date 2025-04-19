@@ -1,6 +1,6 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 export default function NewProject() {
 	const navigate = useNavigate();
 	const { user } = useAuth();
-	const [name, setName] = useState("");
+	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
@@ -26,7 +26,7 @@ export default function NewProject() {
 				.from("projects")
 				.insert([
 					{
-						name,
+						title,
 						description,
 						user_id: user?.id,
 					},
@@ -54,13 +54,13 @@ export default function NewProject() {
 			)}
 			<form onSubmit={handleSubmit} className="space-y-4">
 				<div>
-					<label htmlFor="name" className="block text-sm font-medium mb-1">
+					<label htmlFor="title" className="block text-sm font-medium mb-1">
 						Nome do Projeto
 					</label>
 					<Input
-						id="name"
-						value={name}
-						onChange={(e) => setName(e.target.value)}
+						id="title"
+						value={title}
+						onChange={(e) => setTitle(e.target.value)}
 						required
 					/>
 				</div>
