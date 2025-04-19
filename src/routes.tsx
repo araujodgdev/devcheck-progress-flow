@@ -1,44 +1,52 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth-context';
-import HomePage from '@/pages/home';
-import LoginPage from '@/pages/login';
-import RegisterPage from '@/pages/register';
-import DashboardPage from '@/pages/dashboard';
-import ProjectsPage from '@/pages/projects';
-import ProjectDetailPage from '@/pages/project-detail';
-import CreateProjectPage from '@/pages/create-project';
-import SettingsPage from '@/pages/settings';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import Home from './pages/home';
+import Dashboard from './pages/dashboard';
+import Login from './pages/login';
+import Register from './pages/register';
+import DashboardLayout from './components/layouts/dashboard-layout';
+import SiteLayout from './components/layouts/site-layout';
+import ProjectDetails from './pages/ProjectDetails';
+import NewProject from './pages/NewProject';
+import ChecklistDetails from './pages/ChecklistDetails';
+import SharedChecklist from './pages/SharedChecklist';
+import { AuthProvider } from './components/AuthProvider';
+import { SupabaseProvider } from './contexts/supabase-context';
+import { Toaster } from './components/ui/toaster';
+import { ThemeProvider } from './components/theme-provider';
 
-function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user } = useAuth();
-  
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return <>{children}</>;
-}
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <SiteLayout />,
+    children: [
+      { path: '/', element: <Home /> },
+      { path: '/login', element: <Login /> },
+      { path: '/register', element: <Register /> },
+    ],
+  },
+  {
+    path: '/dashboard',
+    element: <DashboardLayout />,
+    children: [
+      { path: '/dashboard', element: <Dashboard /> },
+    ],
+  },
+  { path: '/projects/new', element: <NewProject /> },
+  { path: '/projects/:projectId', element: <ProjectDetails /> },
+  { path: '/projects/:projectId/checklists/:checklistId', element: <ChecklistDetails /> },
+  { path: '/shared/checklist/:publicId', element: <SharedChecklist /> },
+]);
 
-export function AppRoutes() {
+export default function Routes() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          } 
-        />
-      </Routes>
-    </BrowserRouter>
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <SupabaseProvider>
+        <AuthProvider>
+          <RouterProvider router={router} />
+          <Toaster />
+        </AuthProvider>
+      </SupabaseProvider>
+    </ThemeProvider>
   );
 }
