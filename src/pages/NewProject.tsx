@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/auth-context";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 export default function NewProject() {
 	const navigate = useNavigate();
@@ -29,6 +30,9 @@ export default function NewProject() {
 						title,
 						description,
 						user_id: user?.id,
+						is_public: false, // Default to private
+						status: 'in_progress', // Default status
+						priority: 'medium', // Default priority
 					},
 				])
 				.select()
@@ -36,8 +40,10 @@ export default function NewProject() {
 
 			if (error) throw error;
 
-			navigate(`/projects/${data.id}`);
+			toast.success("Projeto criado com sucesso!");
+			navigate(`/dashboard/projects/${data.id}`);
 		} catch (err) {
+			console.error("Error creating project:", err);
 			setError(err.message);
 		} finally {
 			setLoading(false);
