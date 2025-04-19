@@ -1,63 +1,20 @@
+import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/toaster';
+import { AppRoutes } from '@/routes';
+import { AuthProvider } from '@/contexts/auth-context';
+import { SupabaseProvider } from '@/contexts/supabase-context';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider } from "next-themes";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./components/AuthProvider";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
-import Dashboard from "./pages/Dashboard";
-import NewProject from "./pages/NewProject";
-import ProjectDetails from "./pages/ProjectDetails";
-
-const queryClient = new QueryClient();
-
-const App = () => (
-  <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-    <QueryClientProvider client={queryClient}>
+function App() {
+  return (
+    <SupabaseProvider>
       <AuthProvider>
-        <TooltipProvider>
+        <ThemeProvider defaultTheme="dark" storageKey="devcheck-theme">
+          <AppRoutes />
           <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/new-project"
-                element={
-                  <ProtectedRoute>
-                    <NewProject />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/projects/:projectId"
-                element={
-                  <ProtectedRoute>
-                    <ProjectDetails />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        </ThemeProvider>
       </AuthProvider>
-    </QueryClientProvider>
-  </ThemeProvider>
-);
+    </SupabaseProvider>
+  );
+}
 
 export default App;
