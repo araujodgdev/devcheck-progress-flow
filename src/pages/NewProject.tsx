@@ -23,6 +23,7 @@ export default function NewProject() {
 		setError(null);
 
 		try {
+			// Create the project without using any recursive policies
 			const { data, error } = await supabase
 				.from("projects")
 				.insert([
@@ -30,6 +31,7 @@ export default function NewProject() {
 						title,
 						description,
 						user_id: user?.id,
+						owner_id: user?.id, // Make sure to set owner_id to the user ID as well
 						is_public: false, // Default to private
 						status: 'in_progress', // Default status
 						priority: 'medium', // Default priority
