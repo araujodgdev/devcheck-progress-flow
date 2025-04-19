@@ -96,7 +96,9 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_public: boolean | null
           name: string
+          priority: string | null
           status: string
           updated_at: string
           user_id: string
@@ -105,7 +107,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_public?: boolean | null
           name: string
+          priority?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -114,19 +118,53 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_public?: boolean | null
           name?: string
+          priority?: string | null
           status?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: []
       }
+      shared_projects: {
+        Row: {
+          created_at: string | null
+          id: string
+          project_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          project_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          project_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_projects_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      user_has_project_access: {
+        Args: { project_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       checklist_priority: "low" | "medium" | "high"
