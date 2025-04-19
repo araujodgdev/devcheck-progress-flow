@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { Checklist, ChecklistItem } from '@/types/checklist';
+import type { Checklist, ChecklistItem } from '@/types/checklist';
 import { CheckCircle, Circle, Calendar, Clock } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -77,7 +77,7 @@ export default function SharedChecklist() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Carregando checklist...</h2>
-          <div className="animate-pulse h-2 w-40 bg-gray-200 rounded mx-auto"></div>
+          <div className="animate-pulse h-2 w-40 bg-gray-200 rounded mx-auto" />
         </div>
       </div>
     );
