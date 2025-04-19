@@ -49,7 +49,7 @@ export default function DashboardPage() {
 		<>
 			<div className="flex items-center justify-between mb-8">
 				<h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-				<Link to="/projects/create">
+				<Link to='/dashboard/projects/new'>
 					<Button>
 						<Plus className="mr-2 h-4 w-4" />
 						New Project
@@ -146,7 +146,7 @@ export default function DashboardPage() {
 							<p className="text-muted-foreground mb-4">
 								You don't have any projects yet.
 							</p>
-							<Link to="/projects/create">
+							<Link to='/dashboard/projects/new'>
 								<Button>
 									<Plus className="mr-2 h-4 w-4" />
 									Create Your First Project

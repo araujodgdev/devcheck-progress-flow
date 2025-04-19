@@ -13,7 +13,7 @@ export function DashboardSidebar() {
   return (
     <aside className="hidden md:flex w-64 flex-col border-r bg-background">
       <div className="flex flex-col gap-2 p-4">
-        <Link to="/projects/create">
+        <Link to='/dashboard/projects/new'>
           <Button className="w-full justify-start gap-2">
             <Plus className="h-4 w-4" />
             New Project
