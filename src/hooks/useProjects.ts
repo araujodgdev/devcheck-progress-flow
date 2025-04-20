@@ -56,8 +56,10 @@ export function useProject(projectId: string | undefined) {
       return data as Project;
     },
     enabled: !!projectId,
-    onError: (error: Error) => {
-      toast.error('Failed to load project');
+    meta: {
+      onError: (error: Error) => {
+        toast.error('Failed to load project');
+      }
     }
   });
 }

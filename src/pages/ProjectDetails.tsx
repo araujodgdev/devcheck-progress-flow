@@ -18,6 +18,9 @@ import { Link } from "react-router-dom";
 import { useProject } from "@/hooks/useProjects";
 import { useChecklists } from "@/hooks/useChecklists";
 import { useDeleteProject } from "@/hooks/useProjects";
+import type { Database } from "@/integrations/supabase/types";
+
+type Project = Database['public']['Tables']['projects']['Row'];
 
 export default function ProjectDetails() {
 	const { projectId } = useParams();
@@ -90,7 +93,7 @@ export default function ProjectDetails() {
 			<div className="bg-card rounded-md shadow-sm p-4">
 				<h2 className="text-xl font-semibold mb-4">Checklists</h2>
 				{/* Display checklists related to the project */}
-				{project?.id ? (
+				{project.id ? (
 					<Checklists projectId={project.id} />
 				) : (
 					<p>No checklists associated with this project.</p>
