@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -27,12 +26,14 @@ export function useChecklists(projectId: string | undefined) {
       return data as Checklist[];
     },
     enabled: !!projectId,
-    onSuccess: (data) => {
-      setChecklists(data);
-    },
-    onError: (error: Error) => {
-      setError(error.message);
-      toast.error('Failed to load checklists');
+    meta: {
+      onSuccess: (data: Checklist[]) => {
+        setChecklists(data);
+      },
+      onError: (error: Error) => {
+        setError(error.message);
+        toast.error('Failed to load checklists');
+      }
     }
   });
 

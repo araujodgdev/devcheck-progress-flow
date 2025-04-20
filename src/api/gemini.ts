@@ -1,17 +1,10 @@
-// To run this code you need to install the following dependencies:
-// npm install @google/genai mime
-// npm install -D @types/node
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { supabase } from '@/lib/supabase';
+import type { Database } from '@/integrations/supabase/types';
 
-// Interface para os itens da checklist
-export interface ChecklistItem {
-  title: string;
-  priority: string;
-  due_date: string;
-}
+type ChecklistItem = Database['public']['Tables']['checklist_items']['Row'];
 
-// Interface para os parâmetros de entrada
 export interface GenerateChecklistParams {
   projectName: string;
   projectDescription: string;
@@ -19,22 +12,25 @@ export interface GenerateChecklistParams {
   teamSize: string;
   duration: string;
   complexity: string;
+  userId: string;
+  projectId: string;
 }
 
-// Função principal que gera a checklist
-export async function generateChecklist({
+export async function generateChecklistWithItems({
   projectName,
   projectDescription,
   projectType,
   teamSize,
   duration,
-  complexity
-}: GenerateChecklistParams): Promise<ChecklistItem[]> {
+  complexity,
+  userId,
+  projectId
+}: GenerateChecklistParams): Promise<{ checklistId: string; items: ChecklistItem[] }> {
   try {
-    const apiKey = "AIzaSyAOvu0OM9pCUjNpzniOE3eKhaU1A1iJ_qk"
+    const apiKey = "AIzaSyAOvu0OM9pCUjNpzniOE3eKhaU1A1iJ_qk";
     
     if (!apiKey) {
-      throw new Error('A chave da API Gemini não está configurada');
+      throw new Error('API key not configured');
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -54,67 +50,58 @@ export async function generateChecklist({
     Format the response as a valid JSON array with objects having these properties:
     - title (string): Task title
     - priority (string): "low", "medium", or "high"
-    - due_date (string): Relative time from project start (e.g., "1 week", "2 months")
-    
-    For example:
-    [
-      {
-        "title": "Define project scope",
-        "priority": "high",
-        "due_date": "1 week"
-      }
-    ]`;
+    - due_date (string): Relative time from project start (e.g., "1 week", "2 months")`;
 
-    // Chamar a API do Gemini
+    // Generate items using Gemini
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
 
-    // Extrair o JSON do texto
+    // Extract JSON from response
     const jsonMatch = text.match(/\[\s*\{.*\}\s*\]/s);
     if (!jsonMatch) {
-      throw new Error('Falha ao extrair o JSON da resposta');
+      throw new Error('Failed to extract JSON from response');
     }
 
-    // Parse do JSON
-    const checklistItems: ChecklistItem[] = JSON.parse(jsonMatch[0]);
-    return checklistItems;
+    // Parse items
+    const items = JSON.parse(jsonMatch[0]);
+
+    // Create checklist in Supabase
+    const { data: checklist, error: checklistError } = await supabase
+      .from('checklists')
+      .insert({
+        title: `${projectName} Checklist`,
+        project_id: projectId,
+        owner_id: userId,
+        description: 'Automatically generated checklist'
+      })
+      .select()
+      .single();
+
+    if (checklistError) throw checklistError;
+
+    // Create checklist items
+    const { data: checklistItems, error: itemsError } = await supabase
+      .from('checklist_items')
+      .insert(
+        items.map((item: any, index: number) => ({
+          checklist_id: checklist.id,
+          title: item.title,
+          priority: item.priority,
+          due_date: item.due_date,
+          order: index
+        }))
+      )
+      .select();
+
+    if (itemsError) throw itemsError;
+
+    return {
+      checklistId: checklist.id,
+      items: checklistItems
+    };
   } catch (error) {
-    console.error('Erro ao gerar checklist:', error);
+    console.error('Error generating checklist:', error);
     throw error;
   }
 }
-
-// Hook de exemplo para usar com React Query
-// 
-// import { useMutation } from '@tanstack/react-query';
-// import { generateChecklist } from '@/api/gemini';
-// 
-// export function useGenerateChecklist() {
-//   return useMutation({
-//     mutationFn: generateChecklist,
-//     onError: (error) => {
-//       console.error('Erro ao gerar a checklist:', error);
-//     }
-//   });
-// }
-//
-// Uso:
-// const generateMutation = useGenerateChecklist();
-// 
-// const handleGenerate = async () => {
-//   try {
-//     const items = await generateMutation.mutateAsync({
-//       projectName: "Nome do projeto",
-//       projectDescription: "Descrição do projeto",
-//       projectType: "software",
-//       teamSize: "small",
-//       duration: "1 month",
-//       complexity: "medium"
-//     });
-//     console.log(items);
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
-  

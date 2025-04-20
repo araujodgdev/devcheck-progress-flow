@@ -12,7 +12,6 @@ type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
 export function useProjects() {
   const { setProjects, setIsLoading, setError } = useProjectStore();
 
-  // Fetch all projects for the current user
   const query = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
@@ -24,12 +23,14 @@ export function useProjects() {
       if (error) throw error;
       return data as Project[];
     },
-    onSuccess: (data) => {
-      setProjects(data);
-    },
-    onError: (error: Error) => {
-      setError(error.message);
-      toast.error('Failed to load projects');
+    meta: {
+      onSuccess: (data: Project[]) => {
+        setProjects(data);
+      },
+      onError: (error: Error) => {
+        setError(error.message);
+        toast.error('Failed to load projects');
+      }
     }
   });
 
