@@ -1,7 +1,5 @@
 
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -15,66 +13,55 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Trash2 } from "lucide-react";
-import { useDelete } from "@/hooks/useDelete";
+import { Loader2, Trash2, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useProject } from "@/hooks/useProjects";
+import { useChecklists } from "@/hooks/useChecklists";
+import { useDeleteProject } from "@/hooks/useProjects";
 
 export default function ProjectDetails() {
 	const { projectId } = useParams();
 	const navigate = useNavigate();
-	const [project, setProject] = useState(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(null);
-	const { deleteRow, isDeleting } = useDelete({
-		onSuccess: () => navigate("/dashboard"),
-		successMessage: "Projeto excluído com sucesso",
-	});
+	
+	const { 
+		data: project, 
+		isLoading: isLoadingProject, 
+		error: projectError 
+	} = useProject(projectId);
+	
+	const deleteProjectMutation = useDeleteProject();
 
-	useEffect(() => {
-		async function fetchProject() {
-			try {
-				const { data, error } = await supabase
-					.from("projects")
-					.select("*")
-					.eq("id", projectId)
-					.single();
+	const handleDeleteProject = async () => {
+		if (!projectId) return;
+		
+		await deleteProjectMutation.mutateAsync(projectId);
+		navigate("/dashboard");
+	};
 
-				if (error) throw error;
-				setProject(data);
-			} catch (err) {
-				setError(err.message);
-			} finally {
-				setLoading(false);
-			}
-		}
-
-		fetchProject();
-	}, [projectId]);
-
-	if (loading) {
-		return <div>Loading...</div>;
+	if (isLoadingProject) {
+		return (
+			<div className="flex items-center justify-center h-40">
+				<div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary" />
+			</div>
+		);
 	}
 
-	if (error) {
+	if (projectError || !project) {
 		return (
 			<Alert variant="destructive">
-				<AlertDescription>{error}</AlertDescription>
+				<AlertDescription>Failed to load project details</AlertDescription>
 			</Alert>
 		);
 	}
 
-	const handleDeleteProject = async () => {
-		await deleteRow("projects", projectId);
-	};
-
 	return (
 		<div className="container mx-auto p-4">
 			<div className="flex justify-between items-center mb-6">
-				<h1 className="text-2xl font-bold">{project?.title}</h1>
+				<h1 className="text-2xl font-bold">{project.name}</h1>
 				<AlertDialog>
 					<AlertDialogTrigger asChild>
 						<Button variant="destructive">
-							{isDeleting ? (
+							{deleteProjectMutation.isPending ? (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 							) : (
 								<Trash2 className="mr-2 h-4 w-4" />
@@ -114,62 +101,51 @@ export default function ProjectDetails() {
 }
 
 function Checklists({ projectId }: { projectId: string }) {
-	const [checklists, setChecklists] = useState([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(null);
+	const { 
+		data: checklists, 
+		isLoading, 
+		error 
+	} = useChecklists(projectId);
 
-	useEffect(() => {
-		async function fetchChecklists() {
-			try {
-				const { data, error } = await supabase
-					.from("checklists")
-					.select("*")
-					.eq("project_id", projectId);
-
-				if (error) throw error;
-				setChecklists(data);
-			} catch (err) {
-				setError(err.message);
-			} finally {
-				setLoading(false);
-			}
-		}
-
-		fetchChecklists();
-	}, [projectId]);
-
-	if (loading) {
-		return <div>Loading checklists...</div>;
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center h-20">
+				<div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-primary" />
+			</div>
+		);
 	}
 
 	if (error) {
 		return (
 			<Alert variant="destructive">
-				<AlertDescription>{error}</AlertDescription>
+				<AlertDescription>Failed to load checklists</AlertDescription>
 			</Alert>
 		);
 	}
 
 	return (
 		<div>
-			{checklists.length > 0 ? (
-				<ul className="space-y-2">
+			{checklists && checklists.length > 0 ? (
+				<ul className="space-y-2 mb-4">
 					{checklists.map((checklist) => (
 						<li
 							key={checklist.id}
 							className="border rounded-md p-2 hover:bg-accent"
 						>
-							<Link to={`/projects/${projectId}/checklists/${checklist.id}`}>
+							<Link to={`/dashboard/projects/${projectId}/checklists/${checklist.id}`}>
 								{checklist.title}
 							</Link>
 						</li>
 					))}
 				</ul>
 			) : (
-				<p>No checklists found for this project.</p>
+				<p className="mb-4">No checklists found for this project.</p>
 			)}
 			<Link to={`/dashboard/projects/${projectId}/checklists/new`}>
-				<Button>Add New Checklist</Button>
+				<Button>
+					<Plus className="mr-2 h-4 w-4" />
+					Add New Checklist
+				</Button>
 			</Link>
 		</div>
 	);

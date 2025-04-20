@@ -2,6 +2,10 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { queryClient } from '@/lib/tanstack';
+import type { Database } from '@/integrations/supabase/types';
+
+type TableName = keyof Database['public']['Tables'];
 
 interface UseDeleteOptions {
   onSuccess?: () => void;
@@ -11,7 +15,7 @@ interface UseDeleteOptions {
 export function useDelete(options: UseDeleteOptions = {}) {
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const deleteRow = async (table: string, id: string) => {
+  const deleteRow = async (table: TableName, id: string) => {
     setIsDeleting(true);
     try {
       const { error } = await supabase
@@ -21,6 +25,9 @@ export function useDelete(options: UseDeleteOptions = {}) {
 
       if (error) throw error;
 
+      // Invalidate related queries
+      queryClient.invalidateQueries({ queryKey: [table] });
+      
       if (options.onSuccess) {
         options.onSuccess();
       }

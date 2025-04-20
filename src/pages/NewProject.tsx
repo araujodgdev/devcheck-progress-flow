@@ -1,12 +1,12 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/auth-context";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { toast } from "sonner";
+import { useCreateProject } from "@/hooks/useProjects";
 
 export default function NewProject() {
 	const navigate = useNavigate();
@@ -16,39 +16,32 @@ export default function NewProject() {
 	const [priority, setPriority] = useState("medium");
 	const [status, setStatus] = useState("in_progress");
 	const [error, setError] = useState(null);
-	const [loading, setLoading] = useState(false);
+	
+	const createProject = useCreateProject();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setLoading(true);
 		setError(null);
 
+		if (!user) {
+			setError("You must be logged in to create a project");
+			return;
+		}
+
 		try {
-			const { data, error } = await supabase
-				.from("projects")
-				.insert([
-					{
-						name,
-						description,
-						user_id: user?.id,
-						owner_id: user?.id, // Make sure to set owner_id to the user ID as well
-						is_public: false, // Default to private
-						status, // Default status
-						priority, // Default priority
-					},
-				])
-				.select()
-				.single();
+			await createProject.mutateAsync({
+				name,
+				description,
+				user_id: user.id,
+				status,
+				priority,
+				is_public: false,
+			});
 
-			if (error) throw error;
-
-			toast.success("Projeto criado com sucesso!");
-			navigate(`/dashboard/projects/${data.id}`);
+			navigate('/dashboard');
 		} catch (err) {
 			console.error("Error creating project:", err);
 			setError(err.message);
-		} finally {
-			setLoading(false);
 		}
 	};
 
@@ -114,8 +107,8 @@ export default function NewProject() {
 						rows={4}
 					/>
 				</div>
-				<Button type="submit" disabled={loading}>
-					{loading ? "Criando..." : "Criar Projeto"}
+				<Button type="submit" disabled={createProject.isPending}>
+					{createProject.isPending ? "Criando..." : "Criar Projeto"}
 				</Button>
 			</form>
 		</div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+
 import { Link } from "react-router-dom";
 import {
 	Card,
@@ -10,39 +10,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { ListChecks, Plus, Activity, Clock, Users } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
-import { supabase } from "@/lib/supabase";
-import type { Database } from "@/integrations/supabase/types";
-
-type Project = Database["public"]["Tables"]["projects"]["Row"];
+import { useProjects } from "@/hooks/useProjects";
 
 export default function DashboardPage() {
 	const { user } = useAuth();
-	const [recentProjects, setRecentProjects] = useState<Project[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
+	const { data: projects, isLoading, error } = useProjects();
 
-	useEffect(() => {
-		if (user) {
-			const fetchRecentProjects = async () => {
-				try {
-					const { data, error } = await supabase
-						.from("projects")
-						.select("*")
-						.eq("user_id", user.id)
-						.order("created_at", { ascending: false })
-						.limit(4);
+	// Calculate dashboard stats
+	const totalProjects = projects?.length || 0;
+	const activeProjects = projects?.filter(p => p.status === 'in_progress').length || 0;
+	const completedProjects = projects?.filter(p => p.status === 'completed').length || 0;
+	const publicProjects = projects?.filter(p => p.is_public).length || 0;
 
-					if (error) throw error;
-					setRecentProjects(data || []);
-				} catch (error) {
-					console.error("Error fetching recent projects:", error);
-				} finally {
-					setIsLoading(false);
-				}
-			};
-
-			fetchRecentProjects();
-		}
-	}, [user]);
+	// Get recent projects (up to 4)
+	const recentProjects = projects?.slice(0, 4) || [];
 
 	return (
 		<>
@@ -65,41 +46,41 @@ export default function DashboardPage() {
 						<ListChecks className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">{recentProjects.length}</div>
+						<div className="text-2xl font-bold">{totalProjects}</div>
 						<p className="text-xs text-muted-foreground">+2 from last month</p>
 					</CardContent>
 				</Card>
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
-						<CardTitle className="text-sm font-medium">Active Tasks</CardTitle>
+						<CardTitle className="text-sm font-medium">Active Projects</CardTitle>
 						<Activity className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">12</div>
+						<div className="text-2xl font-bold">{activeProjects}</div>
 						<p className="text-xs text-muted-foreground">+3 from yesterday</p>
 					</CardContent>
 				</Card>
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
 						<CardTitle className="text-sm font-medium">
-							Completed Tasks
+							Completed Projects
 						</CardTitle>
 						<Clock className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">28</div>
+						<div className="text-2xl font-bold">{completedProjects}</div>
 						<p className="text-xs text-muted-foreground">+8 from last week</p>
 					</CardContent>
 				</Card>
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
 						<CardTitle className="text-sm font-medium">
-							Shared Projects
+							Public Projects
 						</CardTitle>
 						<Users className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">3</div>
+						<div className="text-2xl font-bold">{publicProjects}</div>
 						<p className="text-xs text-muted-foreground">+1 from last month</p>
 					</CardContent>
 				</Card>
@@ -111,6 +92,12 @@ export default function DashboardPage() {
 					<div className="flex items-center justify-center h-40">
 						<div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary" />
 					</div>
+				) : error ? (
+					<Card>
+						<CardContent className="p-6">
+							<p className="text-destructive">Failed to load projects. Please try again.</p>
+						</CardContent>
+					</Card>
 				) : recentProjects.length > 0 ? (
 					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 						{recentProjects.map((project) => (
