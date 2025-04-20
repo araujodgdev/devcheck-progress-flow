@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase";
 import { Loader2, Plus, List, RefreshCw } from "lucide-react";
@@ -23,8 +24,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useMutation } from "@tanstack/react-query";
-import { generateChecklist, type ChecklistItem, type GenerateChecklistParams } from "@/api/gemini";
+import { toast } from 'sonner';
+import { useGenerateChecklist } from "@/hooks/useGenerateChecklist";
+import type { ChecklistItem } from "@/types/checklist";
+import type { GenerateChecklistParams } from "@/api/gemini";
 
 // Define uma interface para o projeto compatível com o que vem do banco
 interface Project {
@@ -56,19 +59,9 @@ export default function NewChecklist() {
 	const [duration, setDuration] = useState("1 month");
 	const [complexity, setComplexity] = useState("medium");
 	
-	// TanStack Query mutation para gerar a checklist
-	const generateMutation = useMutation({
-		mutationFn: generateChecklist,
-		onSuccess: (data) => {
-			setGeneratedItems(data);
-			// Selecionar todos os itens por padrão
-			setSelectedItems(data.map(item => item.title));
-		},
-		onError: (err) => {
-			setError(typeof err === 'string' ? err : err instanceof Error ? err.message : 'Erro ao gerar checklist');
-		}
-	});
-
+	// Use the custom hook for generating checklists
+	const generateMutation = useGenerateChecklist();
+	
 	// Fetch project details when component loads
 	useEffect(() => {
 		async function fetchProject() {
@@ -124,7 +117,10 @@ export default function NewChecklist() {
 	
 	// Handle AI checklist generation
 	const handleGenerateChecklist = async () => {
-		if (!project) return;
+		if (!project || !projectId || !user?.id) {
+			toast.error("Dados do projeto incompletos");
+			return;
+		}
 		
 		const params: GenerateChecklistParams = {
 			projectName: project.name,
@@ -132,10 +128,25 @@ export default function NewChecklist() {
 			projectType,
 			teamSize,
 			duration,
-			complexity
+			complexity,
+			userId: user.id,
+			projectId: projectId
 		};
 		
-		generateMutation.mutate(params);
+		generateMutation.mutate(params, {
+			onSuccess: (data) => {
+				if (data && data.items) {
+					setGeneratedItems(data.items);
+					// Selecionar todos os itens por padrão
+					setSelectedItems(data.items.map(item => item.title));
+					toast.success("Checklist gerada com sucesso!");
+				}
+			},
+			onError: (err) => {
+				setError(typeof err === 'string' ? err : err instanceof Error ? err.message : 'Erro ao gerar checklist');
+				toast.error("Falha ao gerar checklist");
+			}
+		});
 	};
 	
 	// Toggle item selection

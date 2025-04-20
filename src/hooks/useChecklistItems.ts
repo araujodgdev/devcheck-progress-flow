@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -27,12 +26,14 @@ export function useChecklistItems(checklistId: string | undefined) {
       return data as ChecklistItem[];
     },
     enabled: !!checklistId,
-    onSuccess: (data) => {
-      setItems(data);
-    },
-    onError: (error: Error) => {
-      setError(error.message);
-      toast.error('Failed to load checklist items');
+    meta: {
+      onSuccess: (data: ChecklistItem[]) => {
+        setItems(data);
+      },
+      onError: (error: Error) => {
+        setError(error.message);
+        toast.error('Failed to load checklist items');
+      }
     }
   });
 
@@ -109,15 +110,12 @@ export function useToggleChecklistItem() {
       return data as ChecklistItem;
     },
     onMutate: async ({ id }) => {
-      // Optimistic update
       toggleItemCompletion(id);
     },
     onSuccess: (data) => {
-      // Real update from server
       queryClient.invalidateQueries({ queryKey: ['checklist-items', data.checklist_id] });
     },
     onError: (error: Error, variables) => {
-      // Revert optimistic update on error
       toggleItemCompletion(variables.id);
       toast.error('Failed to update item status');
     }

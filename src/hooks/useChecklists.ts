@@ -59,8 +59,10 @@ export function useChecklist(checklistId: string | undefined) {
       return data as Checklist;
     },
     enabled: !!checklistId,
-    onError: (error: Error) => {
-      toast.error('Failed to load checklist');
+    meta: {
+      onError: (error: Error) => {
+        toast.error('Failed to load checklist');
+      }
     }
   });
 }
@@ -132,7 +134,6 @@ export function useDeleteChecklist() {
     },
     onSuccess: (id, variables, context) => {
       removeChecklist(id);
-      // We don't know the project_id here so just invalidate all checklists
       queryClient.invalidateQueries({ queryKey: ['checklists'] });
       toast.success('Checklist deleted successfully');
     },
