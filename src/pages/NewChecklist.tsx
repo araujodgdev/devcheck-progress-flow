@@ -23,13 +23,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
-// Define uma interface para os itens gerados da checklist
-interface ChecklistItem {
-	title: string;
-	priority: string;
-	due_date: string;
-}
+import { useMutation } from "@tanstack/react-query";
+import { generateChecklist, type ChecklistItem, type GenerateChecklistParams } from "@/api/gemini";
 
 // Define uma interface para o projeto compatível com o que vem do banco
 interface Project {
@@ -54,14 +49,25 @@ export default function NewChecklist() {
 	const [mode, setMode] = useState<"manual" | "ai">("manual");
 	const [generatedItems, setGeneratedItems] = useState<ChecklistItem[]>([]);
 	const [selectedItems, setSelectedItems] = useState<string[]>([]);
-	const [aiLoading, setAiLoading] = useState(false);
-	const [aiError, setAiError] = useState("");
 	
 	// AI generation form fields
 	const [projectType, setProjectType] = useState("software");
 	const [teamSize, setTeamSize] = useState("small");
 	const [duration, setDuration] = useState("1 month");
 	const [complexity, setComplexity] = useState("medium");
+	
+	// TanStack Query mutation para gerar a checklist
+	const generateMutation = useMutation({
+		mutationFn: generateChecklist,
+		onSuccess: (data) => {
+			setGeneratedItems(data);
+			// Selecionar todos os itens por padrão
+			setSelectedItems(data.map(item => item.title));
+		},
+		onError: (err) => {
+			setError(typeof err === 'string' ? err : err instanceof Error ? err.message : 'Erro ao gerar checklist');
+		}
+	});
 
 	// Fetch project details when component loads
 	useEffect(() => {
@@ -117,48 +123,19 @@ export default function NewChecklist() {
 	};
 	
 	// Handle AI checklist generation
-	const generateChecklist = async () => {
+	const handleGenerateChecklist = async () => {
 		if (!project) return;
 		
-		setAiLoading(true);
-		setAiError("");
+		const params: GenerateChecklistParams = {
+			projectName: project.name,
+			projectDescription: project.description || "",
+			projectType,
+			teamSize,
+			duration,
+			complexity
+		};
 		
-		try {
-            
-			// Usando a URL correta para a sua função do Supabase
-			const response = await fetch('https://pzyraptsgyqwnzwavoyg.supabase.co/functions/v1/generate-checklist', {
-				method: 'POST',
-				headers: { 
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					projectName: project.name,
-					projectDescription: project.description || "",
-					projectType,
-					teamSize,
-					duration,
-					complexity
-				})
-			});
-			
-			const result = await response.json();
-			
-			if (!response.ok) {
-				throw new Error(result.error || "Falha ao gerar checklist");
-			}
-			
-			if (result.items && Array.isArray(result.items)) {
-				setGeneratedItems(result.items);
-				// Select all items by default
-				setSelectedItems(result.items.map(item => item.title));
-			} else {
-				throw new Error("Formato de resposta inválido");
-			}
-		} catch (err) {
-			setAiError(err instanceof Error ? err.message : "Erro ao gerar checklist");
-		} finally {
-			setAiLoading(false);
-		}
+		generateMutation.mutate(params);
 	};
 	
 	// Toggle item selection
@@ -313,12 +290,12 @@ export default function NewChecklist() {
 								</div>
 								
 								<Button 
-									onClick={generateChecklist} 
-									disabled={aiLoading} 
+									onClick={handleGenerateChecklist} 
+									disabled={generateMutation.isPending} 
 									variant="outline" 
 									className="w-full"
 								>
-									{aiLoading ? (
+									{generateMutation.isPending ? (
 										<>
 											<Loader2 className="animate-spin h-4 w-4 mr-2" />
 											Gerando...
@@ -331,8 +308,8 @@ export default function NewChecklist() {
 									)}
 								</Button>
 								
-								{aiError && (
-									<p className="text-red-500 text-sm">{aiError}</p>
+								{generateMutation.isError && (
+									<p className="text-red-500 text-sm">{generateMutation.error instanceof Error ? generateMutation.error.message : "Erro ao gerar checklist"}</p>
 								)}
 								
 								{generatedItems.length > 0 && (
