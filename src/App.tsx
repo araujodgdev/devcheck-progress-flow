@@ -1,5 +1,5 @@
 
-import { ThemeProvider } from '@/components/theme-provider';
+import { ThemeProvider } from '@/providers/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import Routes from '@/routes';
 import { AuthProvider } from '@/contexts/auth-context';

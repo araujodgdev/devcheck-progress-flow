@@ -10,7 +10,7 @@ import ProjectDetails from './pages/ProjectDetails';
 import NewProject from './pages/NewProject';
 import ChecklistDetails from './pages/ChecklistDetails';
 import SharedChecklist from './pages/SharedChecklist';
-import { ThemeProvider } from './components/theme-provider';
+import { ThemeProvider } from './providers/theme-provider';
 import { SupabaseProvider } from './contexts/supabase-context';
 import { AuthProvider } from './contexts/auth-context';
 import { Toaster } from './components/ui/toaster';
