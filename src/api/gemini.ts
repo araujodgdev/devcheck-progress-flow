@@ -1,9 +1,18 @@
-
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/integrations/supabase/types';
 
 type ChecklistItem = Database['public']['Tables']['checklist_items']['Row'];
+
+// Adicionar um tipo para os valores válidos de prioridade
+type PriorityType = 'low' | 'medium' | 'high';
+
+// Interface para os itens gerados pelo modelo Gemini
+interface GeneratedItem {
+  title: string;
+  priority: string;
+  due_date: string;
+}
 
 export interface GenerateChecklistParams {
   projectName: string;
@@ -64,7 +73,7 @@ export async function generateChecklistWithItems({
     }
 
     // Parse items
-    const items = JSON.parse(jsonMatch[0]);
+    const generatedItems = JSON.parse(jsonMatch[0]) as GeneratedItem[];
 
     // Create checklist in Supabase
     const { data: checklist, error: checklistError } = await supabase
@@ -80,21 +89,40 @@ export async function generateChecklistWithItems({
 
     if (checklistError) throw checklistError;
 
-    // Create checklist items
-    const { data: checklistItems, error: itemsError } = await supabase
-      .from('checklist_items')
-      .insert(
-        items.map((item: any, index: number) => ({
-          checklist_id: checklist.id,
-          title: item.title,
-          priority: item.priority,
-          due_date: item.due_date,
-          order: index
-        }))
-      )
-      .select();
+    // Definir variável para os itens
+    let checklistItems = [];
 
-    if (itemsError) throw itemsError;
+    try {
+      // Create checklist items
+      const { data: savedItems, error: itemsError } = await supabase
+        .from('checklist_items')
+        .insert(
+          generatedItems.map((item: GeneratedItem, index: number) => {
+            // Converter a prioridade para o formato aceito pelo banco
+            const priorityValue: PriorityType = 
+              item.priority === 'high' ? 'high' : 
+              item.priority === 'low' ? 'low' : 'medium';
+            
+            return {
+              checklist_id: checklist.id,
+              title: item.title,
+              completed: false,
+              priority: priorityValue
+            };
+          })
+        )
+        .select();
+
+      if (itemsError) {
+        console.error("Error inserting checklist items:", itemsError);
+        // Mesmo com erro nos itens, retornar a checklist criada
+      } else {
+        checklistItems = savedItems;
+      }
+    } catch (itemError) {
+      console.error("Failed to create checklist items:", itemError);
+      // Continue even if items fail to insert
+    }
 
     return {
       checklistId: checklist.id,

@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase";
 import { List, RefreshCw } from "lucide-react";
@@ -115,7 +114,7 @@ export default function NewChecklist() {
 		
 		generateMutation.mutate(params, {
 			onSuccess: (data) => {
-				if (data && data.items) {
+				if (data?.items) {
 					setGeneratedItems(data.items);
 					// Selecionar todos os itens por padrão
 					setSelectedItems(data.items.map(item => item.title));
