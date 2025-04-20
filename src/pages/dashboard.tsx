@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -12,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ListChecks, Plus, Activity, Clock, Users } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase";
-import type { Database } from "@/types/supabase";
+import type { Database } from "@/integrations/supabase/types";
 
 type Project = Database["public"]["Tables"]["projects"]["Row"];
 
@@ -115,10 +114,10 @@ export default function DashboardPage() {
 				) : recentProjects.length > 0 ? (
 					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 						{recentProjects.map((project) => (
-							<Link key={project.id} to={`/projects/${project.id}`}>
+							<Link key={project.id} to={`/dashboard/projects/${project.id}`}>
 								<Card className="hover:bg-accent transition-colors">
 									<CardHeader>
-										<CardTitle>{project.title}</CardTitle>
+										<CardTitle>{project.name}</CardTitle>
 										<CardDescription className="line-clamp-2">
 											{project.description}
 										</CardDescription>

@@ -14,6 +14,7 @@ import { ThemeProvider } from './components/theme-provider';
 import { SupabaseProvider } from './contexts/supabase-context';
 import { AuthProvider } from './contexts/auth-context';
 import { Toaster } from './components/ui/toaster';
+import NewChecklist from './pages/NewChecklist';
 
 const router = createBrowserRouter([
   {
@@ -33,7 +34,9 @@ const router = createBrowserRouter([
       { path: '/dashboard/projects/new', element: <NewProject /> },
       { path: '/dashboard/projects/:projectId', element: <ProjectDetails /> },
       { path: '/dashboard/projects/:projectId/checklists/:checklistId', element: <ChecklistDetails /> },
+      { path: '/dashboard/projects/:projectId/checklists/new', element: <NewChecklist /> },
     ],
+
   },
   { path: '/shared/checklist/:publicId', element: <SharedChecklist /> },
 ]);

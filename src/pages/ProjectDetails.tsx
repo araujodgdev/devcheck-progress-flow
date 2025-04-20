@@ -168,7 +168,7 @@ function Checklists({ projectId }: { projectId: string }) {
 			) : (
 				<p>No checklists found for this project.</p>
 			)}
-			<Link to={`/projects/${projectId}/checklists/new`}>
+			<Link to={`/dashboard/projects/${projectId}/checklists/new`}>
 				<Button>Add New Checklist</Button>
 			</Link>
 		</div>

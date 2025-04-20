@@ -1,6 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 
 // These will be populated when connecting to Supabase
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';

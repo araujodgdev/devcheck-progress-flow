@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,8 +11,10 @@ import { toast } from "sonner";
 export default function NewProject() {
 	const navigate = useNavigate();
 	const { user } = useAuth();
-	const [title, setTitle] = useState("");
+	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
+	const [priority, setPriority] = useState("medium");
+	const [status, setStatus] = useState("in_progress");
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
 
@@ -23,18 +24,17 @@ export default function NewProject() {
 		setError(null);
 
 		try {
-			// Create the project without using any recursive policies
 			const { data, error } = await supabase
 				.from("projects")
 				.insert([
 					{
-						title,
+						name,
 						description,
 						user_id: user?.id,
 						owner_id: user?.id, // Make sure to set owner_id to the user ID as well
 						is_public: false, // Default to private
-						status: 'in_progress', // Default status
-						priority: 'medium', // Default priority
+						status, // Default status
+						priority, // Default priority
 					},
 				])
 				.select()
@@ -62,15 +62,43 @@ export default function NewProject() {
 			)}
 			<form onSubmit={handleSubmit} className="space-y-4">
 				<div>
-					<label htmlFor="title" className="block text-sm font-medium mb-1">
+					<label htmlFor="name" className="block text-sm font-medium mb-1">
 						Nome do Projeto
 					</label>
 					<Input
-						id="title"
-						value={title}
-						onChange={(e) => setTitle(e.target.value)}
+						id="name"
+						value={name}
+						onChange={(e) => setName(e.target.value)}
 						required
 					/>
+				</div>
+				<div className="flex items-center gap-4">
+					<label htmlFor="priority" className="block text-sm font-medium mb-1">
+						Prioridade
+					</label>
+					<select
+						id="priority"
+						value={priority}
+						onChange={(e) => setPriority(e.target.value)}
+						className="border rounded-md p-2 w-full dark:bg-gray-700 dark:text-white bg-white text-gray-900" 
+					>
+						<option value="low">Baixa</option>
+						<option value="medium">Média</option>
+						<option value="high">Alta</option>
+					</select>
+					<label htmlFor="status" className="block text-sm font-medium mb-1">
+						Status
+					</label>
+					<select
+						id="status"
+						value={status}
+						onChange={(e) => setStatus(e.target.value)}
+						className="border rounded-md p-2 w-full dark:bg-gray-700 dark:text-white bg-white text-gray-900" 
+					>
+						<option value="in_progress">Em Andamento</option>
+						<option value="completed">Concluído</option>
+						<option value="on_hold">Em Espera</option>
+					</select>
 				</div>
 				<div>
 					<label
