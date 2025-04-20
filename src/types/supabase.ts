@@ -16,7 +16,7 @@ export interface Database {
           updated_at: string
           user_id: string
           owner_id: string
-          title: string
+          name: string
           description: string | null
           is_public: boolean
           start_date: string | null
@@ -31,7 +31,7 @@ export interface Database {
           updated_at?: string
           user_id: string
           owner_id: string
-          title: string
+          name: string
           description?: string | null
           is_public?: boolean
           start_date?: string | null
@@ -46,7 +46,7 @@ export interface Database {
           updated_at?: string
           user_id?: string
           owner_id?: string
-          title?: string
+          name?: string
           description?: string | null
           is_public?: boolean
           start_date?: string | null
@@ -121,6 +121,7 @@ export interface Database {
           title: string
           description: string | null
           due_date: string | null
+          is_public: boolean
         }
         Insert: {
           id?: string
@@ -131,6 +132,7 @@ export interface Database {
           title: string
           description?: string | null
           due_date?: string | null
+          is_public?: boolean
         }
         Update: {
           id?: string
@@ -141,6 +143,7 @@ export interface Database {
           title?: string
           description?: string | null
           due_date?: string | null
+          is_public?: boolean
         }
       }
       checklist_items: {

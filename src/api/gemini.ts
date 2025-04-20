@@ -1,7 +1,7 @@
-
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { supabase } from '@/lib/supabase';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/types/supabase';
+import { format, addDays, addWeeks, addMonths } from 'date-fns';
 
 type ChecklistItem = Database['public']['Tables']['checklist_items']['Row'];
 type ChecklistInsert = Database['public']['Tables']['checklist_items']['Insert'];
@@ -9,7 +9,7 @@ type Checklist = Database['public']['Tables']['checklists']['Row'];
 
 interface GeneratedItem {
   title: string;
-  priority: Database['public']['Enums']['checklist_priority'];
+  priority: 'high' | 'medium' | 'low';
   due_date: string | null;
 }
 
@@ -22,6 +22,44 @@ export interface GenerateChecklistParams {
   complexity: string;
   userId: string;
   projectId: string;
+}
+
+/**
+ * Converts a relative date string like "1 week", "2 months" to an ISO date string
+ */
+function convertRelativeDateToISODate(relativeDate: string | null): string | null {
+  if (!relativeDate) return null;
+  
+  // Ignore labels that aren't actual dates
+  if (relativeDate.toLowerCase() === 'start date' ||
+      relativeDate.toLowerCase() === 'end date' ||
+      relativeDate.toLowerCase() === 'none' ||
+      relativeDate.toLowerCase() === 'n/a') {
+    return null;
+  }
+  
+  const today = new Date();
+  
+  // Match patterns like "1 day", "2 weeks", "3 months"
+  const match = relativeDate.match(/^(\d+)\s+(day|days|week|weeks|month|months)$/i);
+  if (!match) return null;
+  
+  const amount = Number.parseInt(match[1], 10);
+  const unit = match[2].toLowerCase();
+  
+  if (unit === 'day' || unit === 'days') {
+    return format(addDays(today, amount), 'yyyy-MM-dd');
+  }
+  
+  if (unit === 'week' || unit === 'weeks') {
+    return format(addWeeks(today, amount), 'yyyy-MM-dd');
+  }
+  
+  if (unit === 'month' || unit === 'months') {
+    return format(addMonths(today, amount), 'yyyy-MM-dd');
+  }
+  
+  return null;
 }
 
 export async function generateChecklistWithItems({
@@ -42,7 +80,7 @@ export async function generateChecklistWithItems({
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const prompt = `
     Generate a checklist for a project with the following details:
@@ -81,7 +119,8 @@ export async function generateChecklistWithItems({
         title: `${projectName} Checklist`,
         project_id: projectId,
         description: 'Automatically generated checklist',
-        is_public: false
+        is_public: false,
+        owner_id: userId
       })
       .select()
       .single();
@@ -92,12 +131,12 @@ export async function generateChecklistWithItems({
     const { data: savedItems, error: itemsError } = await supabase
       .from('checklist_items')
       .insert(
-        generatedItems.map((item: GeneratedItem) => ({
+        generatedItems.map((item: GeneratedItem, index: number) => ({
           checklist_id: checklist.id,
-          title: item.title,
-          completed: false,
-          priority: item.priority as Database['public']['Enums']['checklist_priority'],
-          due_date: item.due_date
+          content: item.title,
+          status: 'pending' as Database['public']['Enums']['checklist_item_status'],
+          order: index,
+          due_date: convertRelativeDateToISODate(item.due_date)
         }))
       )
       .select();

@@ -30,11 +30,18 @@ import { CalendarIcon } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import type { ChecklistItem } from "@/types/checklist";
+import type { Database } from "@/integrations/supabase/types";
 
 export default function ChecklistDetails() {
 	const { projectId, checklistId } = useParams();
 	const navigate = useNavigate();
-	const [checklist, setChecklist] = useState<any>(null);
+	const [checklist, setChecklist] = useState<{
+		id: string;
+		title: string;
+		is_public: boolean;
+		public_access_id: string;
+		items: ChecklistItem[];
+	} | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const { deleteRow, isDeleting } = useDelete({
@@ -55,8 +62,8 @@ export default function ChecklistDetails() {
 
 				if (error) throw error;
 				setChecklist(data);
-			} catch (err: any) {
-				setError(err.message);
+			} catch (err: unknown) {
+				setError(err instanceof Error ? err.message : String(err));
 			} finally {
 				setLoading(false);
 			}
@@ -70,38 +77,52 @@ export default function ChecklistDetails() {
 	};
 
 	const togglePublicAccess = async () => {
+		if (!checklist) return;
+		
 		try {
 			const { data, error } = await supabase
 				.from("checklists")
 				.update({ is_public: !checklist.is_public })
 				.eq("id", checklistId)
-				.select()
+				.select("*")
 				.single();
 
 			if (error) throw error;
-			setChecklist(data);
+			
+			// Preserve the items when updating the checklist
+			setChecklist({
+				...data,
+				items: checklist.items
+			});
+			
 			toast.success(
 				data.is_public
 					? "Checklist tornada pública"
 					: "Checklist tornada privada",
 			);
-		} catch (err: any) {
+		} catch (err: unknown) {
 			toast.error("Erro ao alterar visibilidade da checklist");
 		}
 	};
 
 	const copyShareableLink = () => {
-		const link = `${window.location.origin}/shared/checklist/${checklist.public_access_id}`;
+		const link = `${window.location.origin}/shared/checklist/${checklist?.public_access_id}`;
 		navigator.clipboard.writeText(link);
 		toast.success("Link copiado para a área de transferência");
 	};
 
 	const handleCreateChecklistItem = async () => {
+		if (!checklist) return;
+		
 		setIsAddingItem(true);
 		try {
 			const { data, error } = await supabase
 				.from("checklist_items")
-				.insert([{ checklist_id: checklistId, title: newItemTitle }])
+				.insert([{ 
+					checklist_id: checklistId, 
+					title: newItemTitle,
+					completed: false
+				}])
 				.select("*")
 				.single();
 
@@ -112,7 +133,7 @@ export default function ChecklistDetails() {
 				items: [...checklist.items, data],
 			});
 			setNewItemTitle("");
-		} catch (err: any) {
+		} catch (err: unknown) {
 			toast.error("Erro ao criar item");
 			console.error(err);
 		} finally {
@@ -121,6 +142,8 @@ export default function ChecklistDetails() {
 	};
 
 	const toggleChecklistItem = async (item: ChecklistItem) => {
+		if (!checklist) return;
+		
 		try {
 			const { data, error } = await supabase
 				.from("checklist_items")
@@ -137,7 +160,7 @@ export default function ChecklistDetails() {
 					i.id === item.id ? data : i,
 				),
 			});
-		} catch (err: any) {
+		} catch (err: unknown) {
 			toast.error("Erro ao atualizar item");
 			console.error(err);
 		}
@@ -147,6 +170,8 @@ export default function ChecklistDetails() {
 		item: ChecklistItem,
 		date: Date | undefined,
 	) => {
+		if (!checklist) return;
+		
 		try {
 			const { data, error } = await supabase
 				.from("checklist_items")
@@ -163,7 +188,7 @@ export default function ChecklistDetails() {
 					i.id === item.id ? data : i,
 				),
 			});
-		} catch (err: any) {
+		} catch (err: unknown) {
 			toast.error("Erro ao atualizar data do item");
 			console.error(err);
 		}
