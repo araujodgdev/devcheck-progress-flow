@@ -1,28 +1,11 @@
 
-export interface ChecklistItem {
-  id: string;
-  checklist_id: string;
-  title: string;
-  priority: 'low' | 'medium' | 'high';
-  completed: boolean;
-  due_date: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import type { Database } from '@/integrations/supabase/types';
 
-export interface Checklist {
-  id: string;
-  project_id: string;
-  title: string;
-  description: string | null;
-  created_at: string;
-  updated_at: string;
-  public_access_id: string | null;
-  is_public: boolean;
-}
+export type ChecklistItem = Database['public']['Tables']['checklist_items']['Row'];
+export type ChecklistItemInsert = Database['public']['Tables']['checklist_items']['Insert'];
+export type Checklist = Database['public']['Tables']['checklists']['Row'];
+export type ChecklistInsert = Database['public']['Tables']['checklists']['Insert'];
 
 export interface ChecklistWithItems extends Checklist {
   items: ChecklistItem[];
-  is_public: boolean;
-  public_access_id: string | null;
 }

@@ -1,17 +1,16 @@
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/integrations/supabase/types';
 
 type ChecklistItem = Database['public']['Tables']['checklist_items']['Row'];
+type ChecklistInsert = Database['public']['Tables']['checklist_items']['Insert'];
+type Checklist = Database['public']['Tables']['checklists']['Row'];
 
-// Adicionar um tipo para os valores válidos de prioridade
-type PriorityType = 'low' | 'medium' | 'high';
-
-// Interface para os itens gerados pelo modelo Gemini
 interface GeneratedItem {
   title: string;
-  priority: string;
-  due_date: string;
+  priority: Database['public']['Enums']['checklist_priority'];
+  due_date: string | null;
 }
 
 export interface GenerateChecklistParams {
@@ -43,7 +42,7 @@ export async function generateChecklistWithItems({
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `
     Generate a checklist for a project with the following details:
@@ -81,52 +80,36 @@ export async function generateChecklistWithItems({
       .insert({
         title: `${projectName} Checklist`,
         project_id: projectId,
-        owner_id: userId,
-        description: 'Automatically generated checklist'
+        description: 'Automatically generated checklist',
+        is_public: false
       })
       .select()
       .single();
 
     if (checklistError) throw checklistError;
 
-    // Definir variável para os itens
-    let checklistItems = [];
+    // Create checklist items
+    const { data: savedItems, error: itemsError } = await supabase
+      .from('checklist_items')
+      .insert(
+        generatedItems.map((item: GeneratedItem) => ({
+          checklist_id: checklist.id,
+          title: item.title,
+          completed: false,
+          priority: item.priority as Database['public']['Enums']['checklist_priority'],
+          due_date: item.due_date
+        }))
+      )
+      .select();
 
-    try {
-      // Create checklist items
-      const { data: savedItems, error: itemsError } = await supabase
-        .from('checklist_items')
-        .insert(
-          generatedItems.map((item: GeneratedItem, index: number) => {
-            // Converter a prioridade para o formato aceito pelo banco
-            const priorityValue: PriorityType = 
-              item.priority === 'high' ? 'high' : 
-              item.priority === 'low' ? 'low' : 'medium';
-            
-            return {
-              checklist_id: checklist.id,
-              title: item.title,
-              completed: false,
-              priority: priorityValue
-            };
-          })
-        )
-        .select();
-
-      if (itemsError) {
-        console.error("Error inserting checklist items:", itemsError);
-        // Mesmo com erro nos itens, retornar a checklist criada
-      } else {
-        checklistItems = savedItems;
-      }
-    } catch (itemError) {
-      console.error("Failed to create checklist items:", itemError);
-      // Continue even if items fail to insert
+    if (itemsError) {
+      console.error("Error inserting checklist items:", itemsError);
+      throw itemsError;
     }
 
     return {
       checklistId: checklist.id,
-      items: checklistItems
+      items: savedItems
     };
   } catch (error) {
     console.error('Error generating checklist:', error);

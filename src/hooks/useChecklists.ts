@@ -1,17 +1,12 @@
+
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { queryClient } from '@/lib/tanstack';
-import { useChecklistStore } from '@/stores/useChecklistStore';
-import type { Database } from '@/integrations/supabase/types';
-
-type Checklist = Database['public']['Tables']['checklists']['Row'];
-type ChecklistInsert = Database['public']['Tables']['checklists']['Insert'];
+import type { Checklist, ChecklistInsert } from '@/types/checklist';
 
 export function useChecklists(projectId: string | undefined) {
-  const { setChecklists, setIsLoading, setError } = useChecklistStore();
-
-  const query = useQuery({
+  return useQuery({
     queryKey: ['checklists', projectId],
     queryFn: async () => {
       if (!projectId) return [];
@@ -25,22 +20,8 @@ export function useChecklists(projectId: string | undefined) {
       if (error) throw error;
       return data as Checklist[];
     },
-    enabled: !!projectId,
-    meta: {
-      onSuccess: (data: Checklist[]) => {
-        setChecklists(data);
-      },
-      onError: (error: Error) => {
-        setError(error.message);
-        toast.error('Failed to load checklists');
-      }
-    }
+    enabled: !!projectId
   });
-
-  return {
-    ...query,
-    isLoading: query.isLoading || query.isFetching,
-  };
 }
 
 export function useChecklist(checklistId: string | undefined) {
@@ -58,18 +39,11 @@ export function useChecklist(checklistId: string | undefined) {
       if (error) throw error;
       return data as Checklist;
     },
-    enabled: !!checklistId,
-    meta: {
-      onError: (error: Error) => {
-        toast.error('Failed to load checklist');
-      }
-    }
+    enabled: !!checklistId
   });
 }
 
 export function useCreateChecklist() {
-  const { addChecklist } = useChecklistStore();
-
   return useMutation({
     mutationFn: async (checklist: ChecklistInsert) => {
       const { data, error } = await supabase
@@ -82,19 +56,13 @@ export function useCreateChecklist() {
       return data as Checklist;
     },
     onSuccess: (data) => {
-      addChecklist(data);
       queryClient.invalidateQueries({ queryKey: ['checklists', data.project_id] });
       toast.success('Checklist created successfully');
-    },
-    onError: (error: Error) => {
-      toast.error('Failed to create checklist');
     }
   });
 }
 
 export function useUpdateChecklist() {
-  const { updateChecklist } = useChecklistStore();
-
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Checklist> & { id: string }) => {
       const { data, error } = await supabase
@@ -108,37 +76,9 @@ export function useUpdateChecklist() {
       return data as Checklist;
     },
     onSuccess: (data) => {
-      updateChecklist(data);
-      queryClient.invalidateQueries({ queryKey: ['checklists', 'detail', data.id] });
       queryClient.invalidateQueries({ queryKey: ['checklists', data.project_id] });
+      queryClient.invalidateQueries({ queryKey: ['checklists', 'detail', data.id] });
       toast.success('Checklist updated successfully');
-    },
-    onError: (error: Error) => {
-      toast.error('Failed to update checklist');
-    }
-  });
-}
-
-export function useDeleteChecklist() {
-  const { removeChecklist } = useChecklistStore();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('checklists')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-      return id;
-    },
-    onSuccess: (id, variables, context) => {
-      removeChecklist(id);
-      queryClient.invalidateQueries({ queryKey: ['checklists'] });
-      toast.success('Checklist deleted successfully');
-    },
-    onError: (error: Error) => {
-      toast.error('Failed to delete checklist');
     }
   });
 }
